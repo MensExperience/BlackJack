@@ -1,56 +1,53 @@
 package blackJack;
 
-/** 
+/**
  * トランプのカード一枚を表すクラス
  */
-public class Card{
-    
+public class Card {
+
     /** トランプのマーク */
     private String mark;
-    
+
     /** カード番号 */
     private Integer number;
-    
+
     /** カード表示名 */
     private String name;
 
     protected Card() {
     }
-    
+
     /**
-     * マークと番号を指定してカードを作成する
-     * 番号に応じて表示名をセットする
+     * マークと番号を指定してカードを作成する 番号に応じて表示名をセットする
      * 
      * @param mark
      * @param number
      */
-    protected Card(String mark, Integer number){
+    protected Card(String mark, Integer number) {
         this.mark = mark;
         this.number = number;
-        
-        for (int i=1; i<=13; i++) {
-            if (number == 1) {
-                this.name = "A";
-            } else if (number >= 2 && number <= 10) {
-                this.name = number.toString();
-            } else {
-                switch (number) {
-                case 11:
-                    this.name = "J";
-                    break;
-                case 12:
-                    this.name = "Q";
-                    break;
-                case 13:
-                    this.name = "K";
-                    break;
-                default:
-                    break;
-                }
+
+        if (number == 1) {
+            this.name = "A";
+        } else if (number >= 2 && number <= 10) {
+            this.name = number.toString();
+        } else {
+            switch (number) {
+            case 11:
+                this.name = "J";
+                break;
+            case 12:
+                this.name = "Q";
+                break;
+            case 13:
+                this.name = "K";
+                break;
+            default:
+                break;
             }
         }
     }
-    
+
     /**
      * @return mark
      */
@@ -59,7 +56,8 @@ public class Card{
     }
 
     /**
-     * @param mark セットする mark
+     * @param mark
+     *            セットする mark
      */
     public void setMark(String mark) {
         this.mark = mark;
@@ -73,7 +71,8 @@ public class Card{
     }
 
     /**
-     * @param number セットする number
+     * @param number
+     *            セットする number
      */
     public void setNumber(int number) {
         this.number = number;
@@ -87,11 +86,11 @@ public class Card{
     }
 
     /**
-     * @param name セットする name
+     * @param name
+     *            セットする name
      */
     public void setName(String name) {
         this.name = name;
     }
-    
-    
+
 }
