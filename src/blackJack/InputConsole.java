@@ -3,129 +3,158 @@ package blackJack;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * ブラックジャックを表すクラス
+ */
 public class InputConsole{
     
-    public static Player player;
-    public static Player dealer;
+    public static Player player = new Player();
+    public static Player dealer = new Player();
     public static Deck deck = new Deck();
-    public static int turn = 0;
-    public static boolean isEnd = false;
+    
+    public static final String EVEN = "引き分けです";
+    public static final String PLAYER_WIN = "プレーヤーの勝ち";
+    public static final String DEALER_WIN = "ディーラーの勝ち";
+    public static String resultStr = "";
     
     /**
-     * コンソールからの入力を取得する。
-     * "H"(ヒット)、または"S"(スタンド)以外はエラーとし、
-     * "H"または"S"が入力されるまで繰り返す。
-     * @param args
+     * ブラックジャックで遊ぶ
      */
     public static void main(String[] args) {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        String inputStr = "";
         
-        String firstDispStr = "プレーヤーのカード : ";
+        //カードを配る
+        startGame();
         
-        List<Card> playerCardList = new ArrayList<Card>();
-        List<Card> dealerCardList = new ArrayList<Card>();
+        //ディーラーの挙動
+        dealerGame();
+        
+        //プレーヤーの挙動
+        playerGame();
+        
+        //勝敗判定
+        judge();
+        
+    }
+    
+    private static void startGame(){
+        String startStr = "プレーヤーのカード : ";
         
         //カードを配る(ディーラー用とプレーヤー用が必要)
         for (int i=1; i<=2; i++) {
             Card playerCard = deck.dealCard();
+            player.addCardAndCalc(playerCard);
             deck.deleteCard(playerCard);
-            Card dealerCard = deck.dealCard();
-            deck.deleteCard(dealerCard);
-            playerCardList.add(playerCard);
-            dealerCardList.add(dealerCard);
             
-            firstDispStr += playerCard.getName() + " ";
+            Card dealerCard = deck.dealCard();
+            dealer.addCardAndCalc(dealerCard);
+            deck.deleteCard(dealerCard);
+            
+            startStr += playerCard.getName() + " ";
         }
         
-        System.out.println(firstDispStr);
-        
-        player.setCardListAndCalc(playerCardList);
-        dealer.setCardListAndCalc(dealerCardList);
-        
-        //ターンを進める
-        
-        
+        System.out.println(startStr);
     }
     
-    //ターンを進める
-    public static void dealCard(){
-        //ディーラーの動き
-        if (dealer.isHit()) {
+    /** 
+     * プレーヤーの挙動
+     * 
+     * ブラックジャックまたはバーストの場合を除き、
+     * hitOrStand()結果をもとにplayerのヒットフラグをセットし、繰り返す
+     */
+    private static void playerGame() {
+        
+        //プレーヤーのヒットフラグがtrueの時カードを引く(初回は通らない)
+        if (player.isHit()) {
             Card card = deck.dealCard();
+            player.addCardAndCalc(card);
             deck.deleteCard(card);
-            dealer.addCardAndCalc(card);
+            System.out.println("引いたカード : " + card.getName());
         }
         
+        /*
+         * 結果が21以上・・・バーストで終了
+         * 結果が21・・・・・目標達成なので終了、初期状態だった場合はブラックジャックフラグをセット
+         * それ以外・・・・・入力値によってヒットフラグをセットする
+         */
+        if (player.getCalcResult() > 21) {
+            player.setHit(false);
+        } else if (player.getCalcResult() == 21) {
+            if (player.getCardList().size() == 2) {
+                player.setBlackJack(true);
+            }
+            player.setHit(false);
+        } else {
+            player.setHit(hitOrStand());
+        }
+        
+        //ヒットフラグがfalseになるまで再帰呼び出し
+        if (player.isHit()) {
+            playerGame();
+        }
+    }
+    
+    /**
+     * ディーラーの挙動
+     * 
+     * ブラックジャックまたはバーストの場合を除き、
+     * 結果が17以上ならdealerのヒットフラグにfalseをセット
+     * 結果が17未満ならdealerのヒットフラグにtrueをセットして繰り返す
+     */
+    private static void dealerGame() {
+        
+        //ディーラーのヒットフラグがtrueの時カードを引く(初回は通らない)
+        if (dealer.isHit()) {
+            Card card = deck.dealCard();
+            dealer.addCardAndCalc(card);
+            deck.deleteCard(card);
+        }
+        
+        /*
+         * 結果が21以上・・・バーストで終了
+         * 結果が21・・・・・目標達成なので終了、初期状態だった場合はブラックジャックフラグをセット
+         * 結果が17以上・・・ヒットフラグをfalseにして終了
+         * 結果が17未満・・・ヒットフラグにtrueをセット
+         */
         if (dealer.getCalcResult() > 21) {
-            dealer.setBurst(true);
-            isEnd = true;
+            dealer.setHit(false);
         } else if (dealer.getCalcResult() == 21) {
-            if (turn == 0) {
+            if (dealer.getCardList().size() == 2) {
                 dealer.setBlackJack(true);
             }
-            isEnd = true;
-            
+            dealer.setHit(false);
         } else if (dealer.getCalcResult() >= 17) {
             dealer.setHit(false);
         } else {
             dealer.setHit(true);
         }
         
-        //プレーヤーの動き
-        if (player.isHit()) {
-            Card card = deck.dealCard();
-            deck.deleteCard(card);
-            player.addCardAndCalc(card);
-            System.out.println("引いたカード : " + card.getName());
-        }
-        
-        if (player.getCalcResult() > 21) {
-            player.setBurst(true);
-            isEnd = true;
-        } else if (player.getCalcResult() == 21) {
-            if (turn == 0) {
-                player.setBlackJack(true);
-            }
-            
-            isEnd = true;
-        } else {
-            player.setHit(hitOrStand());
-        }
-        
-        if (!dealer.isHit() && !player.isHit()) {
-            isEnd = true;
-        }
-        
-        //勝敗判定
-        if (isEnd) {
-            
-        } else {
-            turn++;
-            dealCard();
-        }
+        //ヒットフラグがfalseになるまで再帰呼び出し
+        if (dealer.isHit()) {
+            dealerGame();
+        } 
     }
     
-    
-    
-    /** ヒット(H)、またはスタンド(S)を入力する */
+    /** 
+     * コンソール入力されたヒット(H)、またはスタンド(S)から
+     * ヒットフラグを返す
+     * 
+     * @return isHit ヒットするときtrue
+     */
     public static boolean hitOrStand() {
 
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         String str = "";
-        boolean isDealCard = false;
+        boolean isHit = false;
 
         do {
             System.out.println("[H]または[S]を入力してください");
             try {
                 str = br.readLine();
                 if ("h".equals(str) || "H".equals(str)) {
-                    isDealCard = true;
+                    isHit = true;
                 } else if ("s".equals(str) || "S".equals(str)) {
-                    isDealCard = false;
+                    isHit = false;
                 } else {
                     str = "";
                 }
@@ -135,40 +164,49 @@ public class InputConsole{
             }
         } while ("".equals(str));
 
-        return isDealCard;
+        return isHit;
     }
     
+    /**
+     * 勝敗を判定するメソッドです。
+     */
     public static void judge(){
-        //バーストしているか判定
-        if (player.isBurst() && dealer.isBurst()) {
-            System.out.println("引き分けです");
+        
+        //ブラックジャックかどうか判定
+        if(player.isBlackJack() && dealer.isBlackJack()){
+            System.out.println("両者ともブラックジャックです。");
+            System.out.println(EVEN);
             return;
-        } else if (dealer.isBurst()) {
-            System.out.println("プレイヤーの勝ちです");
-            System.out.println("プレイヤー : " + player.getCalcResult() + " / ディーラー : " + dealer.getCalcResult());
-        } else if (player.isBurst()) {
-            System.out.println("ディーラーの勝ちです");
-            System.out.println("プレイヤー : " + player.getCalcResult() + " / ディーラー : " + dealer.getCalcResult());
-        } else if (player.getCalcResult() == 21 && dealer.getCalcResult() == 21) {
-            System.out.println("引き分けです");
+        } else if (player.isBlackJack()) {
+            System.out.println("ブラックジャックです。");
+            System.out.println(PLAYER_WIN);
             return;
-        } else if (player.getCalcResult() == 21) {
-            System.out.println("プレイヤーの勝ちです");
-            System.out.println("プレイヤー : " + player.getCalcResult() + " / ディーラー : " + dealer.getCalcResult());
-        } else if (dealer.getCalcResult() == 21) {
-            System.out.println("ディーラーの勝ちです");
-            System.out.println("プレイヤー : " + player.getCalcResult() + " / ディーラー : " + dealer.getCalcResult());
-        } else if (player.getCalcResult() > dealer.getCalcResult()) {
-            System.out.println("プレイヤーの勝ちです");
-            System.out.println("プレイヤー : " + player.getCalcResult() + " / ディーラー : " + dealer.getCalcResult());
-        } else if (player.getCalcResult() < dealer.getCalcResult()) {
-            System.out.println("ディーラーの勝ちです");
-            System.out.println("プレイヤー : " + player.getCalcResult() + " / ディーラー : " + dealer.getCalcResult());
-        } else {
-            System.out.println("引き分けです");
+        } else if (dealer.isBlackJack()) {
+            System.out.println("ブラックジャックです。");
+            System.out.println(DEALER_WIN);
             return;
         }
         
+        int playerResult = player.getCalcResult();
+        int dealerResult = dealer.getCalcResult();
+        
+        resultStr = "プレイヤー : " + playerResult + " / ディーラー : " + dealerResult;
+        
+        //結果の値を比較して判定
+        if (playerResult > 21 && dealerResult > 21) {
+            System.out.println("両者バーストで" + EVEN);
+        } else if (playerResult > 21) {
+            System.out.println(DEALER_WIN);
+        } else if (dealerResult > 21) {
+            System.out.println(PLAYER_WIN);
+        } else if (playerResult == dealerResult) {
+            System.out.println(EVEN);
+        } else if (playerResult > dealerResult) {
+            System.out.println(PLAYER_WIN);
+        } else {
+            System.out.println(DEALER_WIN);
+        }
+        System.out.println(resultStr);
     }
 
 }

@@ -3,52 +3,55 @@ package blackJack;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * ブラックジャックの参加者を表すクラス
+ */
 public class Player {
     
+    /** ヒットする場合はtrue */
     private boolean isHit;
     
+    /** 合計の計算結果 */
     private int calcResult;
     
+    /** 引いたカードのリスト */
     private List<Card> cardList = new ArrayList<Card>();
     
-    private boolean isBurst;
-    
+    /** ブラックジャックならtrue */
     private boolean isBlackJack;
     
-
+    /** 
+     * 初期値をセットしてPlayerオブジェクト作成
+     */
     protected Player(){
         isHit = false;
         calcResult = 0;
-        isBurst = false;
         isBlackJack = false;
     }
     
-    protected void calcCard(){
-        int calcResult = 0;
+    /**
+     * 引いたカードから合計値を計算してセットする
+     * @param card
+     */
+    protected void calcCard(Card card){
+        int num = card.getNumber();
         
-        for (Card card : this.cardList) {
-            int num = card.getNumber();
-            switch (num) {
-            case 1:
-                if (21 - calcResult > 11) {
-                    calcResult += 11;
+        for (int i=1; i<=13; i++) {
+            if (num == 1) {
+                if (21 - this.calcResult > 11) {
+                    this.calcResult += 11;
                 } else {
-                    calcResult += 1;
+                    this.calcResult += 1;
                 }
                 break;
-            case 2-10:
-                calcResult += num;
+            } else if (num >= 2 && num <= 10) {
+                this.calcResult += num;
                 break;
-            case 11-13:
-                calcResult += 10;
-                break;
-
-            default:
+            } else {
+                this.calcResult += 10;
                 break;
             }
         }
-        
-        setCalcResult(calcResult);
     }
     
     /**
@@ -65,18 +68,10 @@ public class Player {
     public void setCardList(List<Card> cardList) {
         this.cardList = cardList;
     }
-
-    /**
-     * @param cardList セットする cardList
-     */
-    public void setCardListAndCalc(List<Card> cardList) {
-        this.cardList = cardList;
-        calcCard();
-    }
     
     public void addCardAndCalc(Card card){
         this.cardList.add(card);
-        calcCard();
+        calcCard(card);
     }
     
     /**
@@ -105,20 +100,6 @@ public class Player {
     }
 
     /**
-     * @return isBurst
-     */
-    public boolean isBurst() {
-        return isBurst;
-    }
-
-    /**
-     * @param isBurst セットする isBurst
-     */
-    public void setBurst(boolean isBurst) {
-        this.isBurst = isBurst;
-    }
-
-    /**
      * @return isBlackJack
      */
     public boolean isBlackJack() {
@@ -131,5 +112,4 @@ public class Player {
     public void setBlackJack(boolean isBlackJack) {
         this.isBlackJack = isBlackJack;
     }
-
 }

@@ -4,10 +4,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+/** 
+ * トランプ1組分を表すクラス
+ */
 public class Deck{
     
+    /** トランプ1組分のカードリスト */
     private List<Card> cardDeck = new ArrayList<Card>();
     
+    /**
+     * 4つのマークそれぞれについて1－13のカードをセットする
+     */
     protected Deck(){
         String[] markArray = {"ハート", "スペード", "ダイヤ", "クラブ"};
 
@@ -19,7 +26,11 @@ public class Deck{
         }
     }
     
-    //カードを配る
+    /**
+     * カードを一枚配る
+     * 
+     * @return Card 引いたカード
+     */
     protected Card dealCard(){
         
         int randomNum = new Random().nextInt(cardDeck.size());
@@ -27,7 +38,11 @@ public class Deck{
         return cardDeck.get(randomNum);
     }
     
-    //配ったカードを除く
+    /**
+     * 使用したカードを除く
+     * 
+     * @param card
+     */
     protected void deleteCard(final Card card){
         cardDeck.remove(card);
     }

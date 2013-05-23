@@ -1,39 +1,53 @@
 package blackJack;
 
+/** 
+ * トランプのカード一枚を表すクラス
+ */
 public class Card{
-    //マーク
+    
+    /** トランプのマーク */
     private String mark;
     
-    //番号
+    /** カード番号 */
     private Integer number;
     
-    //表示名
+    /** カード表示名 */
     private String name;
 
     protected Card() {
     }
     
+    /**
+     * マークと番号を指定してカードを作成する
+     * 番号に応じて表示名をセットする
+     * 
+     * @param mark
+     * @param number
+     */
     protected Card(String mark, Integer number){
         this.mark = mark;
         this.number = number;
-        switch (number) {
-        case 1:
-            this.name = "A";
-            break;
-        case 2-10:
-            this.name = number.toString();
-            break;
-        case 11:
-            this.name = "J";
-            break;
-        case 12:
-            this.name = "Q";
-            break;
-        case 13:
-            this.name = "K";
-            break;
-        default:
-            break;
+        
+        for (int i=1; i<=13; i++) {
+            if (number == 1) {
+                this.name = "A";
+            } else if (number >= 2 && number <= 10) {
+                this.name = number.toString();
+            } else {
+                switch (number) {
+                case 11:
+                    this.name = "J";
+                    break;
+                case 12:
+                    this.name = "Q";
+                    break;
+                case 13:
+                    this.name = "K";
+                    break;
+                default:
+                    break;
+                }
+            }
         }
     }
     
