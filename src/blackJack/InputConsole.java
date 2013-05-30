@@ -9,14 +9,14 @@ import java.io.InputStreamReader;
  */
 public class InputConsole{
     
-    public static Player player = new Player();
-    public static Player dealer = new Player();
-    public static Deck deck = new Deck();
+    private static Player player = new Player();
+    private static Player dealer = new Player();
+    private static Deck deck = new Deck();
     
-    public static final String EVEN = "引き分けです";
-    public static final String PLAYER_WIN = "プレーヤーの勝ち";
-    public static final String DEALER_WIN = "ディーラーの勝ち";
-    public static String resultStr = "";
+    private static final String EVEN = "引き分けです";
+    private static final String PLAYER_WIN = "プレーヤーの勝ち";
+    private static final String DEALER_WIN = "ディーラーの勝ち";
+    private static String resultStr = "";
     
     /**
      * ブラックジャックで遊ぶ
@@ -26,17 +26,15 @@ public class InputConsole{
         //カードを配る
         startGame();
         
-        //ディーラーの挙動
-        dealerGame();
-        
-        //プレーヤーの挙動
-        playerGame();
-        
         //勝敗判定
         judge();
         
     }
     
+    /**
+     * ゲームを開始する
+     * 最初の2枚を配った後プレーヤーの動きを呼び出す
+     */
     private static void startGame(){
         String startStr = "プレーヤーのカード : ";
         
@@ -50,10 +48,13 @@ public class InputConsole{
             dealer.addCardAndCalc(dealerCard);
             deck.deleteCard(dealerCard);
             
-            startStr += playerCard.getName() + " ";
+            startStr += playerCard.getMark() + "の" + playerCard.getName() + " ";
         }
         
         System.out.println(startStr);
+        
+        //プレーヤーから行動
+        playerGame(true);
     }
     
     /** 
@@ -62,14 +63,14 @@ public class InputConsole{
      * ブラックジャックまたはバーストの場合を除き、
      * hitOrStand()結果をもとにplayerのヒットフラグをセットし、繰り返す
      */
-    private static void playerGame() {
+    private static void playerGame(boolean isFirst) {
         
         //プレーヤーのヒットフラグがtrueの時カードを引く(初回は通らない)
         if (player.isHit()) {
             Card card = deck.dealCard();
             player.addCardAndCalc(card);
             deck.deleteCard(card);
-            System.out.println("引いたカード : " + card.getName());
+            System.out.println("引いたカード : " + card.getMark() + "の" + card.getName());
         }
         
         /*
@@ -88,9 +89,18 @@ public class InputConsole{
             player.setHit(hitOrStand());
         }
         
-        //ヒットフラグがfalseになるまで再帰呼び出し
-        if (player.isHit()) {
-            playerGame();
+        /*
+         * 初回は必ずディーラーの動きを呼び出す
+         * ディーラーのヒットフラグがtrueならdealerGame()
+         * プレーヤーのヒットフラグがtrueならplayerGame()
+         * ヒットフラグが両方falseになるまで再帰呼び出し
+         */
+        if (isFirst) {
+            dealerGame();
+        } else if (dealer.isHit()) {
+            dealerGame();
+        } else if (player.isHit()) {
+            playerGame(false);
         }
     }
     
@@ -129,8 +139,14 @@ public class InputConsole{
             dealer.setHit(true);
         }
         
-        //ヒットフラグがfalseになるまで再帰呼び出し
-        if (dealer.isHit()) {
+        /*
+         * プレーヤーのヒットフラグがtrueならplayerGame()
+         * ディーラーのヒットフラグがtrueならdealerGame()
+         * ヒットフラグが両方falseになるまで再帰呼び出し
+         */
+        if (player.isHit()) {
+            playerGame(false);
+        } else if (dealer.isHit()) {
             dealerGame();
         } 
     }
